@@ -1,0 +1,117 @@
+#information that a config file will have to have
+##general information;
+  default playlist
+  playlist name/play order/play mode
+  the playlist order in the gui
+  volume to play at
+##GUI information like:
+  seek amount from buttons
+  default m3u playlist save location
+  volume change amount
+  playlist sorted by
+
+
+#outline of commands to be exec:
+
+##MUSIC FILE FUNCTIONS:
+##some basic info/notes
+  because absolute file paths are given in the m3u file, this should work fine by reading directly from the m3u file
+  
+-play "file path" "
+  plays a file given as an argument
+
+-pause "file path"
+  pauses the current file, if no file is currently playing, nothing happens
+
+-play-pause "file path"
+  pauses the file if playing, or plays, if it's paused
+  have to inplement a way to remember the last played file to be able to use on startup
+
+-seek "file path" "seconds" 
+  the sign of seconds is important, positive is forward, negative is backwards
+
+-absoluteseek "file path" "time"
+  starts playing "file path" starting from "time", if time is out of bounds for "file path", then an error is given
+
+-volume "volume"
+  probably take in some number from between 0 and 100, to set the volume to some amount or something
+
+-mute
+  a toggle, will mute if it's note muted, and unmute if it's muted
+
+##PLAYLIST FILE FUNCTIONS:
+##some basic info/notes
+  m3u files = playlists, what this means is that each playlist MUST have an m3u file associated with it
+
+###New file type stuff
+-new "m3u directory"
+  makes a new playlist if one does not exist already
+  makes an m3u playlist in a directory input by the user
+  
+-load "m3u directory"
+  loads the given m3u playlist or w/e file that has a list of directories of music
+  multiple playlists can be given
+  what this also does is refreshes any changes in the playlist
+  loading can mean the file is ready to be read/it's loaded into the gui, i'm not actually sure what i want to do
+
+-save "m3u directory1" "m3u directory2"
+  saves the loaded "m3u directory1" to "m3u directory2" input by the user
+  this is different from -copy below by not loading the new playlist, what this essentially allows one to do is save backups of a playlist
+
+-delete "m3u directory"
+  deletes the given file (via means of rm (using the delete i wrote is also possible))
+  
+###Music related stuff
+##from here on
+  the given "m3u name" will either reference the full path to the file, or just the file name, i still have to decide
+  since the files have to be loaded to actually be used in these functions, just the file name should suffice
+
+-add "file path" "m3u name"
+  adds a given file to a given m3ufile
+  this will also call -load, to update the playlist after it's added
+  if no "m3u name" is given, a default that is written in some file will be used
+
+-remove "file path" "m3u name"
+  same as add except the file will be removed
+
+-copy "m3u name1" "m3u name2"
+  copies "m3u name1" to a new playlist named "m3u name2"
+  if the names are the same, nothing is done, error message?
+  if the name is the same as another playlist, nothing is done error message?
+  if no name is given, maybe default to playlist2
+  this will also automatically load "m3u name2", is the same as executing save and load
+
+-defaultplaylist "m3u name"
+  sets a playlist as the playlist to concatenate new files too
+
+-copyfile "file path" "m3u name1" "m3u name2"
+  copies a single file "file path" from "m3u name1" to "m3u name2"
+  this will also do -load on "m3u name2"
+
+-playlist "m3u name" "mode"
+  (play playlist) lul
+  plays files in the playlist, with a given mode, depending on how i'm feeling, maybe make this a bitmap kinda thing
+  playback order: shuffle, ordered, backwards order
+  playlist loop (behaviour at the end of the playlist): loop, play single file, end 
+  so a two digit bitmap from 00 to 77
+  for shuffle: a list of numbers for each line of the m3u file will probably be generated, and the file will be played by reading the line number, and getting the string corresponding to that line number on the m3u file
+  the mode will probably have to be saved in the same config file as the default playlist file
+
+
+##GUI STUFF FOR LATER
+##some basic info/notes
+  this will probably all be implemented in python?
+  i still have to learn python, and this will probably be last
+  some of the gui stuff will change some of the lower end stuff, i'ma have to figure out how to consolidate the two
+  because this is gui stuff, idk if any console stuff will apply here, but i'll figure it out #later
+  i'll keep the format the same for consistencies sake
+
+-order
+  order the playlist by artist, album, play count, bit rate, all these wonderful fun things
+
+-changing out assets?
+  be able to #rice the visual aspect of the player, ideally, all visual portions of the gui should be changable, but idk if that's possible yet
+
+-tiling
+  would be nice to implement tiling or something similar to foobar
+  this includes something like adding and removing different modules, spectrum stuff???
