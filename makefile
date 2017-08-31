@@ -1,7 +1,7 @@
 CC = gcc
-FLAGS = 
-HEADERS = -lreadline
-CFILES = main.c
+FLAGS = -lreadline
+HEADERS = parse.h m3ucopy.h m3ufuncs.h fileFuncs.h execFuncs.h struct.h
+CFILES = main.c parse.c m3ucopy.c m3ufuncs.c fileFuncs.c execFuncs.c
 
 name: $(HEADERS)
-	$(CC) -o NAME $(CFILES) $(FLAGS)
+	$(CC) -o musicplayer $(CFILES) $(FLAGS)

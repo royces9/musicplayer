@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -6,7 +7,7 @@
 
 int main(){
   char *input;
-  int error;
+  int error = 0;
 
   while(error <= 0){
     input = readline(">>");
@@ -20,9 +21,11 @@ int main(){
       error = parseString(input);
     }
 
-    if(error != 0){
+    if(error < 0){
       errorReport(error);
     }
+
+    free(input);
   }
 
   return 0;
