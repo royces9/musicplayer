@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL/SDL_mixer.h>
 
-#include "m3ufuncs.h"
+#include "execFuncs.h"
+#include "musicFuncs.h"
 #include "fileFuncs.h"
+#include "musicFuncs.h"
+#include "playlistFuncs.h"
 
-#define NF 18
+#define NF 19
 
 const char FUNCTIONS[NF][20]={
   "-play",
@@ -14,20 +18,22 @@ const char FUNCTIONS[NF][20]={
   "-seek",
   "-absolute-seek",
   "-volume",
+  "-absolute-volume",
   "-mute",
 
   "-new",
   "-load",
   "-save",
   "-delete",
+  "-play-list",
 
   "-add",
   "-remove",
   "-copy",
   "-default-playlist",
   "-copy-file",
-  "-playlist",
-    "quit"
+
+  "-quit"
 };
 
 enum functionEnums{
@@ -37,19 +43,21 @@ enum functionEnums{
   eSeek,
   eAbsoluteSeek,
   eVolume,
+  eAbsoluteVolume,
   eMute,
 
   eNew,
   eLoad,
   eSave,
   eDelete,
+  ePlayPlaylist,
 
   eAdd,
   eRemove,
   eCopy,
   eDefaultPlaylist,
   eCopyFile,
-  ePlaylist,
+
   eQuit
 };
 
@@ -62,7 +70,6 @@ int funcfind(char buffer[]){
   return NF;
 }
 
-
 int charfind(strStruct input){
   int funcNumber = funcfind(input.string[0]), error = 0;
 
@@ -70,54 +77,64 @@ int charfind(strStruct input){
 
   switch(funcNumber){
   case ePlay:
-    break;
+    return playMusic(input);
+
   case ePause:
-    break;
+    return pauseMusic(input);
+
   case ePlayPause:
-    break;
+    return playPauseMusic(input);
+    
   case eSeek:
-    break;
+    return seekMusic(input);
+    
   case eAbsoluteSeek:
-    break;
+    return absoluteSeekMusic(input);
+    
   case eVolume:
-    break;
+    return volumeMusic(input);
+    
+  case eAbsoluteVolume:
+    return absoluteVolumeMusic(input);
+    
   case eMute:
-    break;
+    return muteMusic(input);
 
   case eNew:
-    return m3unew(input);
-    break;
+    return newPlaylist(input);
+
   case eLoad:
-    return m3uload(input);
-    break;
+    return loadPlaylist(input);
+
   case eSave:
-    return m3usave(input);
-    break;
+    return savePlaylist(input);
+
   case eDelete:
-    return m3udelete(input);
+    return deletePlaylist(input);
+
+  case ePlayPlaylist:
+    return playPlaylist(input);
+
     break;
 
   case eAdd:
     return fileAdd(input);
-    break;
+
   case eRemove:
     return fileRemove(input);
-    break;
+
   case eCopy:
     return fileCopy(input);
-    break;
+
   case eDefaultPlaylist:
     return fileDefaultPlaylist(input);
-    break;
+
   case eCopyFile:
     return fileCopyFile(input);
-    break;
-  case ePlaylist:
-
-    break;
 
   case eQuit:
     return 1;
+
   default:
     printf("Invalid command.\n");
     return 0;

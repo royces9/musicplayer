@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "fileFuncs.h"
+#include "parse.h"
 
 int fileAdd(strStruct input){
 
@@ -21,6 +22,7 @@ int fileAdd(strStruct input){
   }
 
   fprintf(file, "%s\n", input.string[2]);
+  printf("\"%s\" added to \"%s\".\n", input.string[2], input.string[1]);
 
   fclose(file);
   return 0;
@@ -48,6 +50,8 @@ int fileRemove(strStruct input){
 
   int length = strlen(input.string[1]);
   char *tempFileDirectory = malloc((length + 5) * sizeof(*tempFileDirectory));
+  __MALLOC_CHECK(tempFileDirectory, error);
+
   strcpy(tempFileDirectory, input.string[1]);
   strcat(tempFileDirectory, ".temp");
 
@@ -58,10 +62,13 @@ int fileRemove(strStruct input){
   }
   
   char *line = malloc(2048 * sizeof(*line));
+  __MALLOC_CHECK(line, error);
 
   int length2 = strlen(input.string[2]);
 
   char *input2 = malloc((length2+2) * sizeof(*input2));
+  __MALLOC_CHECK(line, error);
+  
   strcpy(input2, input.string[2]);
   input2[length2] = '\n';
   input2[length2+1] = 0;
@@ -69,7 +76,6 @@ int fileRemove(strStruct input){
   while(fgets(line, 2048, file)){
     int comp = strcmp(line, input2);
     if(comp == 0){ 
-      printf("Removing line: \"%s\"\n", line);
       continue;
     }
     fprintf(temp, "%s", line);
@@ -89,7 +95,9 @@ int fileRemove(strStruct input){
   free(tempFileDirectory);
   free(line);
   free(input2);
-  
+
+  printf("\"%s\" removed from \"%s\".\n", input.string[2], input.string[1]);  
+
   return 0;
 }
 
@@ -122,6 +130,7 @@ int fileCopy(strStruct input){
   }
   
   char *line = malloc(2048 * sizeof(*line));
+  __MALLOC_CHECK(line, error);
 
   while(fgets(line, 2048, file)){
     fprintf(file2, "%s", line);
@@ -129,8 +138,10 @@ int fileCopy(strStruct input){
 
   fclose(file);
   fclose(file2);
-
   free(line);
+
+  printf("\"%s\" copied to \"%s\".\n", input.string[1], input.string[2]);
+
   return 0;
 }
 

@@ -1,5 +1,5 @@
-#ifndef MUSICFUNCS
-#define MUSICFUNCS
+#ifndef FILEFUNCS
+#define FILEFUNCS
 
 #include "struct.h"
 
@@ -9,4 +9,4 @@ int fileCopy(strStruct input);
 int fileDefaultPlaylist(strStruct input);
 int fileCopyFile(strStruct input);
 
-#endif //MUSICFUNCS
+#endif //FILEFUNCS
