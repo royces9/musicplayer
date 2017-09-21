@@ -5,7 +5,6 @@
 
 void changePlaying();
 int pickNextFile();
-void removeNewLine(unsigned int *input);
 int createPlaylistArray();
 int currentlyPlaying(strStruct input);
 

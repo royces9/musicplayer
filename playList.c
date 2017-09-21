@@ -1,22 +1,22 @@
 #include <SDL/SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
-
-#include <locale.h>
-#include <wchar.h>
 
 #include "parse.h"
 #include "playList.h"
 
-unsigned int _currentPlaylist[4096];
-unsigned int _currentSong[4096];
-unsigned int **playlistArray;
+char _currentPlaylist[4096];
+char _currentSong[4096];
+char **_playlistArray;
 
-extern Mix_Music *global_music;
+extern Mix_Music *global_music; //global Mix_Music struct from main.c
 
 int _lineCount;
-int playlistCount;
+int _playlistCount;
+int _firstRunFlag = 0;
+
 enum {
   singleFile,
   inOrder,
@@ -24,16 +24,16 @@ enum {
 } playMode;
 
 void changePlaying(){
-unsigned int output[4096];
   pickNextFile();
   global_music = Mix_LoadMUS(_currentSong);
+  printf("Now playing \"%s\".\n", _currentSong);
   if(global_music == NULL){
     printf("%s\n", Mix_GetError());
   }
   Mix_PlayMusic(global_music, 1);
 }
 
-int pickNextFile(){
+int pickNextFile(){ //gets the next file from the playlistArray
   FILE *playlist;
 
   playlist = fopen(_currentPlaylist, "r");
@@ -41,54 +41,25 @@ int pickNextFile(){
     return -1;
   }
   else{
-    strcpy(_currentSong, playlistArray[playlistCount]);
-    removeNewLine(_currentSong);
-    playlistCount++;
+    strcpy(_currentSong, _playlistArray[_playlistCount]);
+    _playlistCount++;
   }
   fclose(playlist);
   return 0;
 }
 
-void removeNewLine(unsigned int *input){
-  //  char buffer[4096];
-  //  wcstombs(buffer, input, sizeof(buffer));
-  //  printf("%s\n", buffer);
-  printf("%d\n", sizeof(unsigned int));
-  for(int i = 0;input[i]; i++){
-    printf("hex %08x\n", input[i]);
-    int temp = input[i];
-    short b1 = input[i] & 0xFF;
-    short b2 = input[i]>>8 & 0xFF;
-    short b3 = input[i]>>16 & 0xFF;
-    short b4 = input[i]>>24 & 0xFF;
-
-    if(b1 == 0x0A){
-      input[i] = temp & 0xFFFFFF00;
-      printf("hexA %08x\n", input[i]);
-      break;
-    }
-    else if(b2 == 0x0A){
-      input[i] = temp & 0xFFFF00FF;
-      printf("hexB %08x\n", input[i]);
-      break;
-    }
-    else if(b3 == 0x0A){
-      input[i] = temp & 0xFF00FFFF;
-      printf("hexC %08x\n", input[i]);
-      break;
-    }
-    else if(b4 == 0x0A){
-      input[i] = temp & 0x00FFFFFF;
-      printf("hexD %08x\n", input[i]);
-      break;
-    }
-  }
-}
-
 int createPlaylistArray(){
+
+  if(_firstRunFlag){ //so the array is free'd everything a new array is created
+    freeDoubleArray(_playlistArray);
+    _firstRunFlag = 1;
+  }
+
   FILE *playlist = fopen(_currentPlaylist, "r");
+
   int error;
-  int listShuffle[_lineCount];
+
+  int listShuffle[_lineCount]; //an array with a number from 0 to the number of files
   for(int i = 0; i < _lineCount; i++){
     listShuffle[i] = i;
   }
@@ -101,61 +72,59 @@ int createPlaylistArray(){
       listShuffle[j] = listShuffle[i];
       listShuffle[i] = t;
     }
-  }
-  playlistArray = malloc(_lineCount * sizeof(*playlistArray));
-  __MALLOC_CHECK(playlistArray, error);
+  } //shuffles the numbers around
+
+  _playlistArray = malloc(_lineCount * sizeof(*_playlistArray));
+  __MALLOC_CHECK(_playlistArray, error);
 
   for(int i = 0; i < _lineCount; i++){
-    unsigned int temp[4096];
+    char temp[4096];
     fgets(temp, 4098, playlist);
-    temp[strlen(temp)-1]=0;
-    playlistArray[listShuffle[i]] = malloc((strlen(temp) + 2) * sizeof(**playlistArray));
-    __MALLOC_CHECK(playlistArray[listShuffle[i]], error);
+    int strlenTemp = strlen(temp)+1;
+    _playlistArray[listShuffle[i]] = malloc(strlenTemp * sizeof(**_playlistArray));
+    __MALLOC_CHECK(_playlistArray[listShuffle[i]], error); 
 
-    strcpy(playlistArray[listShuffle[i]], temp);
+    strcpy(_playlistArray[listShuffle[i]], temp); //maps the listShuffle index "i" to _playlistArray index "listShuffle[i]"
+    *(_playlistArray[listShuffle[i]]+strlenTemp-2) = '\0'; //remove new line
   }
   return 0;
 }
 
 int currentlyPlaying(strStruct input){
-  if(access(input.string[1], F_OK) != -1){
-    strcpy(_currentPlaylist, input.string[1]);
-    FILE *playlist = fopen(_currentPlaylist, "r");
+  time_t t;
+  srand((unsigned) time(&t)); //seed for the prng
+
+  if(access(input.string[1], F_OK) != -1){ //check file existence
+    strcpy(_currentPlaylist, input.string[1]); //set current playlist
+
+    FILE *playlist = fopen(_currentPlaylist, "r"); 
     if(playlist == NULL){
       return -1;
     }
 
-    unsigned int temp[4096];
-    fgets(temp, 4096, playlist);
-    strcpy(_currentSong, temp);
-    removeNewLine(_currentSong);
-
-    printf("%s\n", _currentSong);
-    printf("%ls\n", _currentSong);
-    printf("%d\n", strlen(_currentSong));
-
-    printf("test-1\n");
-    setlocale(LC_CTYPE, "ja_JP.UTF-8");
-    char buffer[4096];
-    wcstombs(buffer, _currentSong, sizeof(buffer));
-    global_music = Mix_LoadMUS(buffer);
-    printf("test\n");
-    if(!global_music){
-      printf("%s\n", Mix_GetError());
-      return -3;
-    }
-
-    Mix_PlayMusic(global_music, 1);
-
-    _lineCount = 0;
+    _lineCount = 0; //line count of the file
     while(!feof(playlist)){
-      unsigned int ch = fgetc(playlist);
+      char ch = fgetc(playlist);
       if(ch == '\n'){
 	_lineCount++;
       }
     }
     fclose(playlist);
-    return createPlaylistArray();
+
+    createPlaylistArray(); //create array holding every line of the file
+    strcpy(_currentSong, _playlistArray[0]); //sets the first song to 0
+    global_music = Mix_LoadMUS(_currentSong);
+
+    _playlistCount = 1; //sets the count to play index 1 next
+
+    if(!global_music){
+      printf("%s\n", Mix_GetError());
+      return -3;
+    }
+    Mix_PlayMusic(global_music, 1);//plays
+    printf("Now playing \"%s\".\n", _currentSong);
+
+    return 0;
   }
   return -4;
 }

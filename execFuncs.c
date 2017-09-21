@@ -14,18 +14,18 @@
 const char FUNCTIONS[NF][20]={
   "-play",
   "-pause",
-  "-play-pause",
-  "-seek",
-  "-absolute-seek",
-  "-volume",
-  "-absolute-volume",
+  "pp", //play pause
+  "s", //seek
+  "as", //absolute seek
+  "v", //volume
+  "av", //absolute volume
   "-mute",
 
   "-new",
   "-load",
   "-save",
   "-delete",
-  "-play-list",
+  "pl", //play-list
 
   "-add",
   "-remove",
@@ -33,7 +33,7 @@ const char FUNCTIONS[NF][20]={
   "-default-playlist",
   "-copy-file",
 
-  "-quit"
+  "q" //quit
 };
 
 enum functionEnums{
@@ -61,7 +61,7 @@ enum functionEnums{
   eQuit
 };
 
-int funcfind(char buffer[]){
+int funcfind(char *buffer){
   for(int i = 0; i < NF; i++){
     if(!strcmp(FUNCTIONS[i], buffer)){
       return i;

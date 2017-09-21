@@ -3,9 +3,6 @@
 
 #include "struct.h"
 
-int _LOADED_LISTS;
-int _MAX_LOAD;
-
 int newPlaylist(strStruct input);
 int loadPlaylist(strStruct input);
 int savePlaylist(strStruct input);

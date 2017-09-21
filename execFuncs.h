@@ -3,7 +3,7 @@
 
 #include "struct.h"
 
-int funcfind(char buffer[]);
+int funcfind(char *buffer);
 int charfind(strStruct input);
 
 #endif //EXECFUNCS
