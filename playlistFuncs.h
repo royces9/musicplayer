@@ -4,7 +4,7 @@
 #include "struct.h"
 
 int newPlaylist(strStruct input);
-int loadPlaylist(strStruct input);
+int updatePlaylist(strStruct input);
 int savePlaylist(strStruct input);
 int deletePlaylist(strStruct input);
 int playPlaylist(strStruct input);

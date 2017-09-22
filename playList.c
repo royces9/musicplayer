@@ -1,65 +1,33 @@
 #include <SDL/SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
 
 #include "parse.h"
 #include "playList.h"
 
-char _currentPlaylist[4096];
-char _currentSong[4096];
-char **_playlistArray;
-
-extern Mix_Music *global_music; //global Mix_Music struct from main.c
-
-int _lineCount;
-int _playlistCount;
 int _firstRunFlag = 0;
 
-enum {
-  singleFile,
-  inOrder,
-  shuffle
-} playMode;
-
 void changePlaying(){
-  pickNextFile();
-  global_music = Mix_LoadMUS(_currentSong);
+  strcpy(_currentSong, _playlistArray[_playlistCount++]); //sets the next file to _playlistArray[_playlistCount]
+  __PLAY_GLOBAL_MUSIC(); //defined in playList.h 
   printf("Now playing \"%s\".\n", _currentSong);
-  if(global_music == NULL){
-    printf("%s\n", Mix_GetError());
-  }
-  Mix_PlayMusic(global_music, 1);
-}
-
-int pickNextFile(){ //gets the next file from the playlistArray
-  FILE *playlist;
-
-  playlist = fopen(_currentPlaylist, "r");
-  if(playlist == NULL){
-    return -1;
-  }
-  else{
-    strcpy(_currentSong, _playlistArray[_playlistCount]);
-    _playlistCount++;
-  }
-  fclose(playlist);
-  return 0;
 }
 
 int createPlaylistArray(){
-
-  if(_firstRunFlag){ //so the array is free'd everything a new array is created
+  if(_firstRunFlag){ //so the array is free'd everytime a new array is created, firstRun is so there's no free the first time
     freeDoubleArray(_playlistArray);
     _firstRunFlag = 1;
   }
 
   FILE *playlist = fopen(_currentPlaylist, "r");
+  if(playlist == NULL){
+    return -1;
+  }
 
   int error;
-
   int listShuffle[_lineCount]; //an array with a number from 0 to the number of files
+
   for(int i = 0; i < _lineCount; i++){
     listShuffle[i] = i;
   }
@@ -87,44 +55,14 @@ int createPlaylistArray(){
     strcpy(_playlistArray[listShuffle[i]], temp); //maps the listShuffle index "i" to _playlistArray index "listShuffle[i]"
     *(_playlistArray[listShuffle[i]]+strlenTemp-2) = '\0'; //remove new line
   }
+  _firstRunFlag = 1;
   return 0;
 }
 
-int currentlyPlaying(strStruct input){
-  time_t t;
-  srand((unsigned) time(&t)); //seed for the prng
-
-  if(access(input.string[1], F_OK) != -1){ //check file existence
-    strcpy(_currentPlaylist, input.string[1]); //set current playlist
-
-    FILE *playlist = fopen(_currentPlaylist, "r"); 
-    if(playlist == NULL){
-      return -1;
+int searchArray(char *search, char **array, int length){
+  for(int i = 0; i < length; i++){
+    if(!strcmp(array[i], search)){
+      return i;
     }
-
-    _lineCount = 0; //line count of the file
-    while(!feof(playlist)){
-      char ch = fgetc(playlist);
-      if(ch == '\n'){
-	_lineCount++;
-      }
-    }
-    fclose(playlist);
-
-    createPlaylistArray(); //create array holding every line of the file
-    strcpy(_currentSong, _playlistArray[0]); //sets the first song to 0
-    global_music = Mix_LoadMUS(_currentSong);
-
-    _playlistCount = 1; //sets the count to play index 1 next
-
-    if(!global_music){
-      printf("%s\n", Mix_GetError());
-      return -3;
-    }
-    Mix_PlayMusic(global_music, 1);//plays
-    printf("Now playing \"%s\".\n", _currentSong);
-
-    return 0;
   }
-  return -4;
 }

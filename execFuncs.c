@@ -22,7 +22,7 @@ const char FUNCTIONS[NF][20]={
   "-mute",
 
   "-new",
-  "-load",
+  "-update",
   "-save",
   "-delete",
   "pl", //play-list
@@ -47,7 +47,7 @@ enum functionEnums{
   eMute,
 
   eNew,
-  eLoad,
+  eUpdate,
   eSave,
   eDelete,
   ePlayPlaylist,
@@ -103,8 +103,8 @@ int charfind(strStruct input){
   case eNew:
     return newPlaylist(input);
 
-  case eLoad:
-    return loadPlaylist(input);
+  case eUpdate:
+    return updatePlaylist(input);
 
   case eSave:
     return savePlaylist(input);
