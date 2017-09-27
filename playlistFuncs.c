@@ -1,8 +1,11 @@
+#include <ncurses.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 
+#include "screen.h"
 #include "playlistFuncs.h"
 #include "playList.h"
 
@@ -13,7 +16,7 @@ int newPlaylist(strStruct input){
   }
 
   if(access(input.string[1], F_OK) != -1){
-    printf("Playlist \"%s\" already exists.\n", input.string[1]);
+    wprintw(topright, "Playlist \"%s\" already exists.\n", input.string[1]);
     return 0;
   }
 
@@ -24,7 +27,7 @@ int newPlaylist(strStruct input){
   }
   fclose(file);
 
-  printf("New playlist \"%s\" created.\n", input.string[1]);
+  wprintw(topright, "New playlist \"%s\" created.\n", input.string[1]);
   return 0;
 }
 
@@ -34,7 +37,7 @@ int updatePlaylist(strStruct input){ //reloads the playlist array
   }
     
   if(!strcmp(input.string[1], _currentPlaylist)){
-    printf("Playlist does not need to be updated.\n");
+    wprintw(topright, "Playlist does not need to be updated.\n");
     return 0;
   }
 
@@ -51,18 +54,18 @@ int deletePlaylist(strStruct input){
     return -2;
   }
   if(access(input.string[1], F_OK) == -1){
-    printf("Are you sure you would like to delete \"%s\"?\n", input.string[1]);
+    wprintw(topright, "Are you sure you would like to delete \"%s\"?\n", input.string[1]);
     char prompt = getchar();
     if(prompt == 'Y' || prompt == 'y'){
       int error = unlink(input.string[1]);
       if(error){
 	return -1;
       }
-      printf("Deleted \"%s\".\n", input.string[1]);
+      wprintw(topright, "Deleted \"%s\".\n", input.string[1]);
     }
   }
   else{
-    printf("File \"%s\" does not exist.\n", input.string[1]);
+    wprintw(topright, "File \"%s\" does not exist.\n", input.string[1]);
   }
   return 0;
 }
@@ -113,16 +116,16 @@ int playPlaylist(strStruct input){
 	_playlistCount = searchArray(_currentSong, _playlistArray, _lineCount)+1;
       }
       else{ //if the file doesn't exist picks a random one
-	printf("File \"%s\"does not exist.\n", input.string[2]);
+	wprintw(topright, "File \"%s\"does not exist.\n", input.string[2]);
 	strcpy(_currentSong, _playlistArray[0]);
 	_playlistCount = 1;
 
 	__PLAY_GLOBAL_MUSIC();
       }
     }
-    printf("Now playing \"%s\".\n", _currentSong);
+    wprintw(topright, "Now playing \"%s\".\n", _currentSong);
     return 0;
   }
-  printf("File \"%s\" does not exist.\n", input.string[1]);
+  wprintw(topright, "File \"%s\" does not exist.\n", input.string[1]);
   return -4;
 }

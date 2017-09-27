@@ -17,7 +17,7 @@ int playMusic(strStruct input){
 
 int pauseMusic(strStruct input){
   if(Mix_PausedMusic()){
-    printf("Music not playing.\n");
+    printw("Music not playing.\n");
     return 0;
   }
   Mix_PauseMusic();

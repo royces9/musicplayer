@@ -9,6 +9,9 @@
   error = -6; \
   }
 
+
+int my_getchar();
+void inputHandling(char input[]);
 int parseString(char *input, Mix_Music *music);
 strStruct separateString(char *input, char delimiter, int *error);
 void freeDoubleArray(char **input);

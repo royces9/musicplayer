@@ -1,3 +1,5 @@
+#include <ncurses.h>
+
 #include <SDL/SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,13 +7,18 @@
 
 #include "parse.h"
 #include "playList.h"
+#include "screen.h"
 
 int _firstRunFlag = 0;
+
+void printPlaylist(){
+  for(
+}
 
 void changePlaying(){
   strcpy(_currentSong, _playlistArray[_playlistCount++]); //sets the next file to _playlistArray[_playlistCount]
   __PLAY_GLOBAL_MUSIC(); //defined in playList.h 
-  printf("Now playing \"%s\".\n", _currentSong);
+  wprintw(topright, "Now playing \"%s\".\n", _currentSong);
 }
 
 int createPlaylistArray(){

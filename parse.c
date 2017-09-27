@@ -1,3 +1,5 @@
+#include <ncurses.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,7 +7,110 @@
 
 #include "parse.h"
 #include "execFuncs.h"
+#include "screen.h"
 #include "struct.h"
+
+int my_getchar(){
+  int a, b ,c;
+  while((a = getchar()) != '\r'){
+    switch(a){
+    case 27:
+      c = 27;
+      break;
+    case 91:
+      if(c == 27){
+	b = 91;
+      }
+      else{
+	return a;
+      }
+      break;
+    case 65 ... 68:
+      if(c == 27 && b == 91){
+	switch(a){
+	case 65: return KEY_DOWN;
+	case 66: return KEY_UP;
+	case 67: return KEY_RIGHT;
+	case 68: return KEY_LEFT;
+	}
+      }
+      break;
+    default:
+      return a;
+    }
+  }
+}
+
+void inputHandling(char input[]){
+  //  int count = 0;
+
+  int cursorY = 0, cursorX = 0;
+  wmove(topleft, cursorY, cursorX);
+  wrefresh(topleft);
+
+  int c;
+  int length = 0;
+
+  while((c = my_getchar()) != '\r'){
+
+    switch(c){
+    case KEY_DOWN:
+    case KEY_UP:
+      break;
+
+    case KEY_LEFT:
+      wprintw(topright, "left");
+      if(--cursorX < 0){
+	cursorX = 0;
+      }
+      break;
+
+    case KEY_RIGHT:
+      if(cursorX >= length){
+	cursorX = length;
+	break;
+      }
+      cursorX++;
+      break;
+
+    case 127:
+    case KEY_BACKSPACE:
+      if(--cursorX < 0){
+	cursorX = 0;
+      }
+      else{
+	for(int i = cursorX; i <= length; i++){
+	  input[i] = input[i+1];
+	}
+      }
+      break;
+      
+    default:
+      for(int i = length; i < cursorX;i--){
+	input[i+1] = input[i];
+      }
+      input[cursorX++] = c;
+
+      break;
+    }
+
+    wmove(topleft, 0, 0);
+    clrtoeol();
+
+    wprintw(topleft, "%s\n", input);
+    wmove(topleft, cursorY, cursorX);
+
+    wrefresh(topleft);
+
+    length = strlen(input);
+  }
+
+  wmove(topleft, 0, 0);
+  clrtoeol();
+  wrefresh(topleft);
+
+  input[length] = '\0';
+}
 
 int parseString(char *input, Mix_Music *music){
   int error = 0;
@@ -102,26 +207,28 @@ void freeDoubleArray(char **input){
 }
 
 void errorReport(int error){
+  wprintw(topright, "Error: ");
   switch(error){
-  case -1: printf("File did not open cleanly."); break;
-  case -2: printf("Incorrect number of inputs."); break;
-  case -3: printf("Audio errors."); break;
-  case -4: printf("File does not exist."); break;
-  case -5: printf("Volume not set."); break;
-  case -6: printf("Malloc error."); break;
-  case -7: printf("Pthread error."); break;
+  case -1: wprintw(topright, "File did not open cleanly."); break;
+  case -2: wprintw(topright, "Incorrect number of inputs."); break;
+  case -3: wprintw(topright, "Audio errors."); break;
+  case -4: wprintw(topright, "File does not exist."); break;
+  case -5: wprintw(topright, "Volume not set."); break;
+  case -6: wprintw(topright, "Malloc error."); break;
+  case -7: wprintw(topright, "Pthread error."); break;
   }
-  printf("\n");
+  wprintw(topright, "\n");
+  wrefresh(topright);
 }
 
 int startUp(){
   if(Mix_Init(MIX_INIT_FLAC | MIX_INIT_MOD | MIX_INIT_MP3 | MIX_INIT_OGG) == -1){
-    printf("Mix_Init: %s\n", Mix_GetError());
+    wprintw(topright, "Mix_Init: %s\n", Mix_GetError());
     return -3;
   }
 
   if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) == -1){
-    printf("Mix_OpenAudio: %s\n", Mix_GetError());
+    wprintw(topright, "Mix_OpenAudio: %s\n", Mix_GetError());
     return -3;
   }
 }

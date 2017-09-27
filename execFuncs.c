@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,8 @@
 #include "fileFuncs.h"
 #include "musicFuncs.h"
 #include "playlistFuncs.h"
+
+#include "screen.h"
 
 #define NF 19
 
@@ -115,8 +118,6 @@ int charfind(strStruct input){
   case ePlayPlaylist:
     return playPlaylist(input);
 
-    break;
-
   case eAdd:
     return fileAdd(input);
 
@@ -136,7 +137,7 @@ int charfind(strStruct input){
     return 1;
 
   default:
-    printf("Invalid command.\n");
+    wprintw(topright, "Invalid command.\n");
     return 0;
   }
 }

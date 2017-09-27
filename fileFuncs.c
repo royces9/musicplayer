@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,7 +23,7 @@ int fileAdd(strStruct input){
   }
 
   fprintf(file, "%s\n", input.string[2]);
-  printf("\"%s\" added to \"%s\".\n", input.string[2], input.string[1]);
+  printw("\"%s\" added to \"%s\".\n", input.string[2], input.string[1]);
 
   fclose(file);
   return 0;
@@ -96,7 +97,7 @@ int fileRemove(strStruct input){
   free(line);
   free(input2);
 
-  printf("\"%s\" removed from \"%s\".\n", input.string[2], input.string[1]);  
+  printw("\"%s\" removed from \"%s\".\n", input.string[2], input.string[1]);  
 
   return 0;
 }
@@ -140,7 +141,7 @@ int fileCopy(strStruct input){
   fclose(file2);
   free(line);
 
-  printf("\"%s\" copied to \"%s\".\n", input.string[1], input.string[2]);
+  printw("\"%s\" copied to \"%s\".\n", input.string[1], input.string[2]);
 
   return 0;
 }
